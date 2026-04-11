@@ -21,7 +21,6 @@ class ErrorAnalyzer:
         print(f"Средняя ошибка: {mean:.2f}%")
 
 
-
 if __name__ == "__main__":
     y_true = [100, 200, 150, 300, 250]
     y_pred = [90, 210, 140, 310, 240]
