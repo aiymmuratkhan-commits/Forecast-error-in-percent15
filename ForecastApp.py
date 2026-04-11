@@ -51,7 +51,7 @@ class ForecastApp:
         print(f"Ошибка прогноза (MAPE): {mape:.2f}%")
 
 
-# 🔹 запуск
+
 if __name__ == "__main__":
     app = ForecastApp("forecast.csv")
     app.run()
