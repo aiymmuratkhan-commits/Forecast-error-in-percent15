@@ -1,6 +1,3 @@
-import ForecastProcessor as forecastprocessor
-import ErrorAnalyzer as erroranalyzer
-import MAPECalculator11 as mapecalculator
 import pandas as pd
 import json
 
@@ -32,37 +29,9 @@ class ForecastMAPEAnalyzer:
         with open(filename, "w") as f:
             json.dump(result, f, indent=4)
 
+analyzer = ForecastMAPEAnalyzer("forecast.csv")
 
-file = "forecast.csv"
-
-
-# 1) ForecastProcessor
-fp = forecastprocessor.ForecastProcessor(file)
-fp.create_file()
-fp.load_data()
-
-y_true, y_pred = fp.filter_non_zero()
-
-print("Filtered data:")
-print(y_true)
-print(y_pred)
-
-
-# 2) ErrorAnalyzer (NumPy)
-ea = erroranalyzer.ErrorAnalyzer(y_true, y_pred)
-ea.run()
-
-
-# 3) Mapecalculator
-mc = mapecalculator.MAPECalculator(file)
-mape_old = mc.run()
-print("\nOLD MAPE:", mape_old)
-
-
-# 4) Forecastmape
-analyzer = ForecastMAPEAnalyzer(file)
 result = analyzer.calculate_mape()
-
-print("\nNEW MAPE:", result)
+print(result)
 
 analyzer.save_to_json(result)
