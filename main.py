@@ -3,6 +3,7 @@ import ErrorAnalyzer as erroranalyzer
 import MAPECalculator11 as mapecalculator
 import pandas as pd
 import json
+import matplotlib.pyplot as plt
 
 
 class ForecastMAPEAnalyzer:
@@ -33,36 +34,65 @@ class ForecastMAPEAnalyzer:
             json.dump(result, f, indent=4)
 
 
-file = "forecast.csv"
+class ScatterPlotter:
+    def __init__(self, y_true, y_pred, filename="scatter.png"):
+        self.y_true = y_true
+        self.y_pred = y_pred
+        self.filename = filename
+
+    def plot(self):
+        plt.figure(figsize=(6, 6))
+
+        plt.scatter(self.y_true, self.y_pred, alpha=0.6, label="Predictions")
+
+        min_val = min(min(self.y_true), min(self.y_pred))
+        max_val = max(max(self.y_true), max(self.y_pred))
+        plt.plot([min_val, max_val], [min_val, max_val], 'r--', label="Ideal y=x")
+
+        plt.xlabel("y_true")
+        plt.ylabel("y_pred")
+        plt.title("Scatter Plot")
+        plt.legend()
+
+        plt.savefig(self.filename)
+        plt.close()
+
+    def run(self):
+        self.plot()
+        print(f"График сақталды: {self.filename}")
 
 
-# 1) ForecastProcessor
-fp = forecastprocessor.ForecastProcessor(file)
-fp.create_file()
-fp.load_data()
+# ================= MAIN =================
+if __name__ == "__main__":
+    file = "forecast.csv"
 
-y_true, y_pred = fp.filter_non_zero()
+    # 1) ForecastProcessor
+    fp = forecastprocessor.ForecastProcessor(file)
+    fp.create_file()
+    fp.load_data()
 
-print("Filtered data:")
-print(y_true)
-print(y_pred)
+    y_true, y_pred = fp.filter_non_zero()
 
+    print("Filtered data:")
+    print(y_true)
+    print(y_pred)
 
-# 2) ErrorAnalyzer (NumPy)
-ea = erroranalyzer.ErrorAnalyzer(y_true, y_pred)
-ea.run()
+    # 2) ErrorAnalyzer
+    ea = erroranalyzer.ErrorAnalyzer(y_true, y_pred)
+    ea.run()
 
+    # 3) Old MAPE
+    mc = mapecalculator.MAPECalculator(file)
+    mape_old = mc.run()
+    print("\nOLD MAPE:", mape_old)
 
-# 3) Mapecalculator
-mc = mapecalculator.MAPECalculator(file)
-mape_old = mc.run()
-print("\nOLD MAPE:", mape_old)
+    # 4) New MAPE
+    analyzer = ForecastMAPEAnalyzer(file)
+    result = analyzer.calculate_mape()
 
+    print("\nNEW MAPE:", result)
+    analyzer.save_to_json(result)
 
-# 4) Forecastmape
-analyzer = ForecastMAPEAnalyzer(file)
-result = analyzer.calculate_mape()
-
-print("\nNEW MAPE:", result)
-
-analyzer.save_to_json(result)
+    # 5) Scatter Plot
+    plotter = ScatterPlotter(y_true, y_pred)
+    plotter.run()
